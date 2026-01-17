@@ -1,135 +1,114 @@
 import { useState } from "react";
 
-function PasswordGenerator() {
-  const [length, setLength] = useState<number>(12);
-  const [includeUppercase, setIncludeUppercase] = useState<boolean>(true);
-  const [includeNumbers, setIncludeNumbers] = useState<boolean>(true);
-  const [includeSymbols, setIncludeSymbols] = useState<boolean>(true);
-  const [password, setPassword] = useState<string>("");
-  const [copied, setCopied] = useState<boolean>(false);
-
-  // Função para gerar senha
-  const generatePassword = () => {
-    let chars = "abcdefghijklmnopqrstuvwxyz";
-    if (includeUppercase) chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    if (includeNumbers) chars += "0123456789";
-    if (includeSymbols) chars += "!@#$%^&*()_+-=[]{}|;:,.<>?";
-
-    let generated = "";
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * chars.length);
-      generated += chars[randomIndex];
-    }
-    setPassword(generated);
-    setCopied(false)
-  };
-
-  // Função para copiar senha
-  const copyToClipboard = () => {
-    if (password) {
-      navigator.clipboard.writeText(password);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000); //feedback some depois de 2s
-    }
-  };
-
-  // Função para avaliar força da senha
-  const getStrength = (password: string): string => {
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-    if (strength <= 1) return "Fraca";
-    if (strength === 2) return "Média";
-    return "Forte";
-  };
-
-  return (
-    <div className="flex flex-col items-center gap-4 p-6 bg-gray-100 rounded-xl shadow-md w-full max-w-md">
-      <h2 className="text-2xl font-bold">Gerador de Senhas</h2>
-
-      {/* Configurações */}
-      <div className="flex flex-col gap-3 w-full">
-        <label>
-          Comprimento: <span className="font-semibold">{length}</span>
-          <input
-            type="range"
-            min="4"
-            max="32"
-            value={length}
-            onChange={(e) => setLength(Number(e.target.value))}
-            className="w-full accent-blue-600"
-          />
-        </label>
-
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={includeUppercase}
-            onChange={(e) => setIncludeUppercase(e.target.checked)}
-          />
-          Incluir Letras Maiúsculas
-        </label>
-
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={includeNumbers}
-            onChange={(e) => setIncludeNumbers(e.target.checked)}
-          />
-          Incluir Números
-        </label>
-
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={includeSymbols}
-            onChange={(e) => setIncludeSymbols(e.target.checked)}
-          />
-          Incluir Símbolos
-        </label>
-      </div>
-
-      {/* Botão Gerar */}
-      <button
-        onClick={generatePassword}
-        className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
-        Gerar Senha </button>
-
-      {/* Exibição da senha */}
-      {password && (
-        <div className="flex flex-col items-center gap-2 w-full">
-          <div className="flex justify-between items-center w-full bg-white rounded-lg shadow px-4 py-2 font-mono text-lg">
-            <span className="truncate">{password}</span>
-            <button
-              onClick={copyToClipboard}
-              className="ml-4 px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-            >
-              {copied ? "Copiado!" : "Copiar"}
-            </button>
-          </div>
-
-          {/* Força da senha */}
-          <p className="text-sm">
-            Força da senha:{" "}
-            <span
-              className={`font-bold ${
-                getStrength(password) === "Fraca"
-                  ? "text-red-500"
-                  : getStrength(password) === "Média"
-                  ? "text-yellow-500"
-                  : "text-green-600"
-              }`}
-            >
-              {getStrength(password)}
-            </span>
-          </p>
-        </div>
-      )}
-    </div>
-  );
+type Options = {
+  length: number;
+  uppercase: boolean;
+  lowercase: boolean;
+  numbers: boolean;
+  symbols: boolean;
 };
 
-export default PasswordGenerator;
+export default function PasswordGenerator() {
+  const [password, setPassword] = useState<String>("");
+  const [options, setOptions] = useState<Options>({
+    length: 12,
+    uppercase: true,
+    lowercase: true,
+    numbers: true,
+    symbols: false,
+  });
+
+  function generatePassword() {
+    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lower = "abcdefghijklmnopqrstuvwxyz";
+    const nums = "0123456789";
+    const syms = "!@#$%^&*()_+~`|}{[]:;?><,./-=";
+
+    let chars = "";
+
+    if (options.uppercase) chars += upper;
+    if (options.lowercase) chars += lower;
+    if (options.numbers) chars += nums;
+    if (options.symbols) chars += syms;
+
+    if (!chars) return;
+
+    let result = "";
+    for (let i = 0; i < options.length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    setPassword(result);
+  }
+
+  return (
+    <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 space-y-6">
+
+      {/* Título */}
+      <div className="text-center space-y-1">
+        <h1 className="text-2xl font-bold text-slate-800">
+          Password Generator
+        </h1>
+        <p className="text-sm text-slate-500">
+          Crie senhas seguras em segundos
+        </p>
+      </div>
+
+      {/* Senha */}
+      <div className="bg-slate-100 rounded-lg p-3 text-center font-mono text-lg text-slate-700 break-all">
+        {password || "Clique em gerar senha"}
+      </div>
+
+      {/* Tamanho */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700">
+          Tamanho: {options.length}
+        </label>
+        <input
+          type="range"
+          min={6}
+          max={32}
+          value={options.length}
+          onChange={(e) =>
+            setOptions({ ...options, length: Number(e.target.value) })
+          }
+          className="w-full"
+        />
+      </div>
+
+      {/* Opções */}
+      <div className="space-y-2 text-sm">
+        {[
+          { key: "uppercase", label: "Letras maiúsculas" },
+          { key: "lowercase", label: "Letras minúsculas" },
+          { key: "numbers", label: "Números" },
+          { key: "symbols", label: "Símbolos" },
+        ].map((item) => (
+          <label key={item.key} className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={options[item.key as keyof Options] as boolean}
+              onChange={(e) =>
+                setOptions({
+                  ...options,
+                  [item.key]: e.target.checked,
+                })
+              }
+            />
+            {item.label}
+          </label>
+        ))}
+      </div>
+
+      {/* Botão */}
+      <button
+        onClick={generatePassword}
+        className="w-full py-3 rounded-lg bg-indigo-600 text-white font-semibold
+                   hover:bg-indigo-700 transition-colors"
+      >
+        Gerar senha
+      </button>
+
+    </div>
+  );
+}
